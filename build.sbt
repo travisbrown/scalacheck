@@ -11,19 +11,21 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.11.0-M3"
 
-crossScalaVersions := Seq("2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2", "2.9.3", "2.10.0", "2.10.1")
+scalaBinaryVersion := "2.11.0-M3"
 
-mimaDefaultSettings
-
-previousArtifact := Some("org.scalacheck" % "scalacheck_2.9.2" % "1.9")
+resolvers += "sonatype" at "https://oss.sonatype.org/service/local/repositories/releases/"
 
 libraryDependencies += "org.scala-tools.testing" %  "test-interface" % "0.5"
 
 libraryDependencies <++= (scalaVersion){sVer =>
-  if(sVer startsWith "2.9") Seq.empty
-  else Seq("org.scala-lang" % "scala-actors" % sVer)
+  sVer match {
+    case "2.10.0-M3" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case "2.10.0-M4" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case "2.11.0-M3" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case _ => Seq()
+  }
 }
 
 javacOptions ++= Seq("-Xmx1024M")
