@@ -11,9 +11,9 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.11.0-M6"
+scalaVersion := "2.10.3"
 
-scalaBinaryVersion := "2.11.0-M6"
+crossScalaVersions := Seq("2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2", "2.9.3", "2.10.3", "2.11.0-M6")
 
 mimaDefaultSettings
 
@@ -21,16 +21,14 @@ previousArtifact := Some("org.scalacheck" % "scalacheck_2.10" % "1.10.0")
 
 libraryDependencies += "org.scala-tools.testing" %  "test-interface" % "0.5"
 
-
 libraryDependencies <++= (scalaVersion){sVer =>
   if(sVer startsWith "2.9") Seq.empty
   else Seq("org.scala-lang" % "scala-actors" % sVer)
 }
 
-
 libraryDependencies <++= (scalaVersion){sVer =>
   if((sVer startsWith "2.9") || (sVer startsWith "2.10")) Seq.empty
-  else Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.0-RC3")
+  else Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.0-RC4")
 }
 
 javacOptions ++= Seq("-Xmx1024M")
