@@ -1,5 +1,3 @@
-import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-
 import com.typesafe.tools.mima.plugin.MimaKeys.previousArtifact
 
 name := "scalacheck"
@@ -12,19 +10,21 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.1"
 
-crossScalaVersions := Seq("2.9.3", "2.10.3", "2.11.0-M5")
+crossScalaVersions := Seq()
 
 mimaDefaultSettings
 
-previousArtifact := Some("org.scalacheck" % "scalacheck_2.10" % "1.11.0-SNAPSHOT")
+previousArtifact := Some("org.scalacheck" % "scalacheck_2.11" % "1.11.0")
+
+resolvers += "sonatype" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies += "org.scala-sbt" %  "test-interface" % "1.0"
 
 libraryDependencies ++= (
   if((scalaVersion.value startsWith "2.9") || (scalaVersion.value startsWith "2.10")) Seq.empty
-  else Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0-RC2")
+  else Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1")
 )
 
 javacOptions ++= Seq("-Xmx1024M")
