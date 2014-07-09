@@ -8,16 +8,18 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.11.0"
 
-crossScalaVersions := Seq("2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2", "2.10.0-M1", "2.10.0-M2", "2.10.0-M3", "2.10.0-M4")
+crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0")
+
+resolvers += "sonatype" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies += "org.scala-tools.testing" %  "test-interface" % "0.5"
 
 libraryDependencies <++= (scalaVersion){sVer =>
   sVer match {
-    case "2.10.0-M3" => Seq("org.scala-lang" % "scala-actors" % sVer)
-    case "2.10.0-M4" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case "2.10.4" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case "2.11.0" => Seq("org.scala-lang" % "scala-actors" % sVer, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1")
     case _ => Seq()
   }
 }
