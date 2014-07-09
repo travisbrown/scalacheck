@@ -1,7 +1,4 @@
-import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-
 import com.typesafe.tools.mima.plugin.MimaKeys.previousArtifact
-
 import VersionKeys.scalaParserCombinatorsVersion
 
 name := "scalacheck"
@@ -14,15 +11,17 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.1"
 
-scalaParserCombinatorsVersion := "1.0.0-RC5"
+scalaParserCombinatorsVersion := "1.0.1"
 
-crossScalaVersions := Seq("2.9.3", "2.10.3", "2.11.0-M7")
+crossScalaVersions := Seq()
 
 mimaDefaultSettings
 
-previousArtifact := Some("org.scalacheck" % "scalacheck_2.10" % "1.11.0")
+previousArtifact := Some("org.scalacheck" % "scalacheck_2.11" % "1.11.0")
+
+resolvers += "sonatype" at "https://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies += "org.scala-sbt" %  "test-interface" % "1.0"
 
