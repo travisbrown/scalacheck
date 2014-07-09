@@ -11,9 +11,7 @@ licenses := Seq("BSD-style" -> url("http://www.opensource.org/licenses/bsd-licen
 
 homepage := Some(url("http://www.scalacheck.org"))
 
-scalaVersion := "2.11.0-M3"
-
-scalaBinaryVersion := "2.11.0-M3"
+scalaVersion := "2.11.1"
 
 resolvers += "sonatype" at "https://oss.sonatype.org/service/local/repositories/releases/"
 
@@ -21,9 +19,7 @@ libraryDependencies += "org.scala-tools.testing" %  "test-interface" % "0.5"
 
 libraryDependencies <++= (scalaVersion){sVer =>
   sVer match {
-    case "2.10.0-M3" => Seq("org.scala-lang" % "scala-actors" % sVer)
-    case "2.10.0-M4" => Seq("org.scala-lang" % "scala-actors" % sVer)
-    case "2.11.0-M3" => Seq("org.scala-lang" % "scala-actors" % sVer)
+    case "2.11.1" => Seq("org.scala-lang" % "scala-actors" % sVer, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1")
     case _ => Seq()
   }
 }
