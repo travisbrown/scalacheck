@@ -4,7 +4,7 @@ lazy val sharedSettings = mimaDefaultSettings ++ Seq(
 
   name := "scalacheck",
 
-  version := "1.12.3-SNAPSHOT",
+  version := "2.0.0-SNAPSHOT",
 
   organization := "org.scalacheck",
 
@@ -16,7 +16,7 @@ lazy val sharedSettings = mimaDefaultSettings ++ Seq(
 
   crossScalaVersions := Seq("2.10.4", "2.11.5"),
 
-  previousArtifact := Some("org.scalacheck" % "scalacheck_2.11" % "1.12.1"),
+  previousArtifact := Some("org.scalacheck" % "scalacheck_2.11" % "2.0.0"),
 
   unmanagedSourceDirectories in Compile += baseDirectory.value / "src-shared" / "main" / "scala",
 

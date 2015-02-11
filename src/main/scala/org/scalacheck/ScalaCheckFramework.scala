@@ -20,15 +20,12 @@ private abstract class ScalaCheckRunner(
   val loader: ClassLoader
 ) extends Runner {
 
+  type Prop = Gen[(String, Test.Result[String])]
+
   val successCount = new AtomicInteger(0)
   val failureCount = new AtomicInteger(0)
   val errorCount = new AtomicInteger(0)
   val testCount = new AtomicInteger(0)
-
-  val params = Test.cmdLineParser.parseParams(args) match {
-    case Some(p) => p.withTestCallback(new Test.TestCallback {})
-    case None => throw new Exception(s"Invalid ScalaCheck args")
-  }
 
   def deserializeTask(task: String, deserializer: String => TaskDef) = {
     val taskDef = deserializer(task)
@@ -48,14 +45,11 @@ private abstract class ScalaCheckRunner(
   abstract class BaseTask(override val taskDef: TaskDef) extends Task {
     val tags: Array[String] = Array()
 
-    val props: Map[String,Prop] = {
+    val props: Seq[Prop] = {
       val fp = taskDef.fingerprint.asInstanceOf[SubclassFingerprint]
       val obj = if (fp.isModule) loadModule(taskDef.fullyQualifiedName,loader)
                 else newInstance(taskDef.fullyQualifiedName, loader)(Seq())
-      obj match {
-        case props: Properties => Map(props.properties: _*)
-        case prop: Prop => Map("" -> prop)
-      }
+      (obj.asInstanceOf[Properties]).properties
     }
 
     def execute(handler: EventHandler, loggers: Array[Logger],
@@ -65,38 +59,49 @@ private abstract class ScalaCheckRunner(
 
   def rootTask(td: TaskDef) = new BaseTask(td) {
     def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] =
-      props.toArray map { case (name,_) =>
+      props.zipWithIndex.toArray map { case (prop, idx) =>
         checkPropTask(new TaskDef(td.fullyQualifiedName, td.fingerprint,
-          td.explicitlySpecified, Array(new TestSelector(name)))
+          td.explicitlySpecified, Array(new TestSelector(idx.toString)))
         )
       }
   }
 
   def checkPropTask(taskDef: TaskDef) = new BaseTask(taskDef) {
-    val names = taskDef.selectors flatMap {
-      case ts: TestSelector => Array(ts.testName)
-      case _ => Array.empty[String]
+    val idxs = taskDef.selectors flatMap {
+      case ts: TestSelector => Array(ts.testName.toInt)
+      case _ => Array.empty[Int]
     }
 
     def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] =
-      names flatMap { name =>
-        import util.Pretty.{pretty, Params}
+      idxs flatMap { idx =>
+        val prop = props(idx)
 
-        val prop = props(name)
-        val result = Test.check(params.withCustomClassLoader(Some(loader)), prop)
+        val seed = 0
+        val size = 0
+
+        var counter = 1
+        var r = prop.sampleResult(seed, size)
+        while (r.next.isDefined) {
+          counter += 1
+          r = r.next.get.sampleResult(seed, size)
+        }
+
+        assert(r.value.isDefined, "BUG")
+
+        val (name, result) = r.value.get
 
         val event = new Event {
-          val status = result.status match {
-            case Test.Passed => Status.Success
-            case _:Test.Proved => Status.Success
-            case _:Test.Failed => Status.Failure
-            case Test.Exhausted => Status.Failure
-            case _:Test.PropException => Status.Error
+          val status = result match {
+            case _:Test.Passed[String] => Status.Success
+            case _:Test.Proved[String] => Status.Success
+            case _:Test.Failed[String] => Status.Failure
+            case _:Test.Exhausted[String] => Status.Failure
+            case _:Test.PropException[String] => Status.Error
           }
-          val throwable = result.status match {
-            case Test.PropException(_, e, _) => new OptionalThrowable(e)
-            case _:Test.Failed => new OptionalThrowable(
-              new Exception(pretty(result, Params(0)))
+          val throwable = result match {
+            case Test.PropException(_, e) => new OptionalThrowable(e)
+            case _:Test.Failed[String] => new OptionalThrowable(
+              new Exception(result.toString)
             )
             case _ => new OptionalThrowable()
           }
@@ -117,14 +122,9 @@ private abstract class ScalaCheckRunner(
         }
         testCount.incrementAndGet()
 
-        // TODO Stack traces should be reported through event
-        val verbosityOpts = Set("-verbosity", "-v")
-        val verbosity =
-          args.grouped(2).filter(twos => verbosityOpts(twos.head))
-          .toSeq.headOption.map(_.last).map(_.toInt).getOrElse(0)
-        val s = if (result.passed) "+" else "!"
+        val s = if (event.status == Status.Success) "+" else "!"
         val n = if (name.isEmpty) taskDef.fullyQualifiedName else name
-        val logMsg = s"$s $n: ${pretty(result, Params(verbosity))}"
+        val logMsg = s"$s $n: $result"
         loggers.foreach(l => l.info(logMsg))
 
         Array.empty[Task]
@@ -146,9 +146,7 @@ final class ScalaCheckFramework extends Framework {
 
   def fingerprints: Array[Fingerprint] = Array(
     mkFP(false, "org.scalacheck.Properties"),
-    mkFP(false, "org.scalacheck.Prop"),
-    mkFP(true, "org.scalacheck.Properties"),
-    mkFP(true, "org.scalacheck.Prop")
+    mkFP(true, "org.scalacheck.Properties")
   )
 
   def runner(args: Array[String], remoteArgs: Array[String],
