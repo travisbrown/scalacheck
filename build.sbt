@@ -13,9 +13,9 @@ homepage := Some(url("http://www.scalacheck.org"))
 
 scalaVersion := "2.11.1"
 
-scalaParserCombinatorsVersion := "1.0.1"
+scalaParserCombinatorsVersion := "1.0.4"
 
-crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.1")
+crossScalaVersions := Seq("2.9.3", "2.10.5", "2.11.6", "2.12.0-M1")
 
 mimaDefaultSettings
 
