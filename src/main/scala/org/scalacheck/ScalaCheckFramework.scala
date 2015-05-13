@@ -13,6 +13,7 @@ import sbt.testing._
 import org.scalajs.testinterface.TestUtils.{loadModule, newInstance}
 import scala.language.reflectiveCalls
 import java.util.concurrent.atomic.AtomicInteger
+import scala.annotation.tailrec
 
 private abstract class ScalaCheckRunner(
   val args: Array[String],
@@ -74,21 +75,18 @@ private abstract class ScalaCheckRunner(
 
     def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] =
       idxs flatMap { idx =>
-        val prop = props(idx)
-
         val seed = 0
         val size = 0
 
-        var counter = 1
-        var r = prop.sampleResult(seed, size)
-        while (r.next.isDefined) {
-          counter += 1
-          r = r.next.get.sampleResult(seed, size)
+        @tailrec def evalProp(p: Prop): (String, Test.Result[String]) = {
+          val r = p.sampleResult(seed,size)
+          r.next match {
+            case Some(p1) => evalProp(p1)
+            case None => r.value.get
+          }
         }
 
-        assert(r.value.isDefined, "BUG")
-
-        val (name, result) = r.value.get
+        val (name, result) = evalProp(props(idx))
 
         val event = new Event {
           val status = result match {
